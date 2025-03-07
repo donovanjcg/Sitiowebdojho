@@ -27,13 +27,16 @@ jobs:
         run: dotnet build webappsite/webappsite.csproj --configuration Release
 
       - name: dotnet publish
-        run: webappsite/webappsite.csproj -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+        run: dotnet publish webappsite/webappsite.csproj -c Release -o ${{ runner.temp }}/myapp
+
+      - name: Zip published files
+        run: Compress-Archive -Path ${{ runner.temp }}/myapp/* -DestinationPath ${{ runner.temp }}/myapp.zip
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
+          path: ${{ runner.temp }}/myapp.zip
 
   deploy:
     runs-on: windows-latest
@@ -50,13 +53,14 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: .net-app
-      
+          path: ${{ runner.temp }}
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_03DDEA5F922E4C689CE964839BB2447B }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_6A910A9A110942FEB759450F4A700276 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_33250402B409409EB211FD03E93B0813 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID }}
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
@@ -64,5 +68,4 @@ jobs:
         with:
           app-name: 'grupoempresarialdoho'
           slot-name: 'Production'
-          package: .
-          
+          package: ${{ runner.temp }}/myapp.zip
