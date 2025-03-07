@@ -54,34 +54,34 @@ jobs:
         with:
           name: .net-app
           path: ${{ runner.temp }}
-      build:
-    runs-on: windows-latest
-    permissions:
-      contents: read
+    build:
+      runs-on: windows-latest
+      permissions:
+        contents: read
 
-    steps:
-      - uses: actions/checkout@v4
+      steps:
+        - uses: actions/checkout@v4
 
-      - name: Set up .NET Core
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '9.x'
+        - name: Set up .NET Core
+          uses: actions/setup-dotnet@v4
+          with:
+            dotnet-version: '9.x'
 
-      - name: Obtener Tenant ID
-        run: |
-          az account show --query tenantId --output tsv
+        - name: Obtener Tenant ID
+          run: |
+            az account show --query tenantId --output tsv
           
-      - name: Login to Azure
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_03DDEA5F922E4C689CE964839BB2447B }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_6A910A9A110942FEB759450F4A700276 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_33250402B409409EB211FD03E93B0813 }}
+        - name: Login to Azure
+          uses: azure/login@v2
+          with:
+            client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_03DDEA5F922E4C689CE964839BB2447B }}
+            tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_6A910A9A110942FEB759450F4A700276 }}
+            subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_33250402B409409EB211FD03E93B0813 }}
 
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: 'grupoempresarialdoho'
-          slot-name: 'Production'
-          package: ${{ runner.temp }}/myapp.zip
+        - name: Deploy to Azure Web App
+          id: deploy-to-webapp
+          uses: azure/webapps-deploy@v3
+          with:
+            app-name: 'grupoempresarialdoho'
+            slot-name: 'Production'
+            package: ${{ runner.temp }}/myapp.zip
