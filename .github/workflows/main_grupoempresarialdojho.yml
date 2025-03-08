@@ -1,7 +1,7 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy okok
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy ASP.Net Core app to Azure Web App - grupoempresarialdoho
+name: Build and deploy ASP.Net Core app to Azure Web App - grupoempresarialdojho
 
 on:
   push:
@@ -12,31 +12,27 @@ on:
 jobs:
   build:
     runs-on: windows-latest
-    permissions:
-      contents: read #This is required for actions/checkout
 
     steps:
       - uses: actions/checkout@v4
 
       - name: Set up .NET Core
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '9.x'
+          include-prerelease: true
 
       - name: Build with dotnet
-        run: dotnet build webappsite/webappsite.csproj --configuration Release
+        run: dotnet build --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish webappsite/webappsite.csproj -c Release -o ${{ runner.temp }}/myapp
-
-      - name: Zip published files
-        run: Compress-Archive -Path ${{ runner.temp }}/myapp/* -DestinationPath ${{ runner.temp }}/myapp.zip
+        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
 
       - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: .net-app
-          path: ${{ runner.temp }}/myapp.zip
+          path: ${{env.DOTNET_ROOT}}/myapp
 
   deploy:
     runs-on: windows-latest
@@ -44,29 +40,18 @@ jobs:
     environment:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-    permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
 
     steps:
       - name: Download artifact from build job
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v3
         with:
           name: .net-app
-          path: ${{ runner.temp }}
-          
-      - name: Login to Azure
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_56DB5888525D40DD8E8BB9958F4E9A26 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_322F483684014574AF15462CE03FE193 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_CAA78C5A7D044BDC9752D3829E6B0114 }}
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
-        uses: azure/webapps-deploy@v3
+        uses: azure/webapps-deploy@v2
         with:
           app-name: 'grupoempresarialdojho'
           slot-name: 'Production'
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_756C6776F92541A48C618BA00D0FE724 }}
           package: .
-          
